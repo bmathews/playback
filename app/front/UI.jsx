@@ -2,11 +2,13 @@
 
 const handleDrop = require('drag-and-drop-files')
 const React = require('react')
-const reactDOM = require('react-dom')
-const render = reactDOM.render
-const findDOMNode = reactDOM.findDOMNode
+const ReactDOM = require('react-dom')
+const render = ReactDOM.render
+const findDOMNode = ReactDOM.findDOMNode
 const Slider = require('react-slider')
 const CSSTG = require('react-addons-css-transition-group')
+const hyperx = require('hyperx')
+const hx = hyperx(React.createElement)
 
 const Icon = require('./components/icon.jsx')
 const Titlebar = require('./components/titlebar.jsx')
@@ -184,48 +186,48 @@ const UI = React.createClass({
       const active = file === this.state.currentFile ? 'active' : ''
       let icon
       if (active) {
-        icon = <Icon icon='play'/>
+        icon = React.createElement(Icon, { icon: 'play' })
       } else {
         icon = i + 1
       }
 
       return (
-        <li key={i} onClick={this._handlePlaylistItemClick.bind(this, file)} className={active}>
-          <div className='playlist__item-icon'>{icon}</div>
-          <div className='playlist__item-title'>{file.name}</div>
-          <div className='playlist__item-action' onClick={this._handlePlaylistRemoveItemClick.bind(this, file, i)}><Icon icon='highlight-remove'/></div>
-        </li>
+        hx`<li key=${i} onClick=${this._handlePlaylistItemClick.bind(this, file)} className=${active}>
+          <div className='playlist__item-icon'>${icon}</div>
+          <div className='playlist__item-title'>${file.name}</div>
+          <div className='playlist__item-action' onClick=${this._handlePlaylistRemoveItemClick.bind(this, file, i)}>${React.createElement(Icon, { icon: 'highlight-remove' })}</div>
+        </li>`
       )
     })
 
     if (!items.length) {
-      items = <li><div className='playlist__item-title'>Play queue empty</div></li>
+      items = hx`<li><div className='playlist__item-title'>Play queue empty</div></li>`
     }
 
     return (
-      <div key={'playlist'} className='dialog playlist'>
-        <ul>{items}</ul>
+      hx`<div key=${'playlist'} className='dialog playlist'>
+        <ul>${items}</ul>
         <div>
-          <button className='btn' onClick={this._handleAddMediaClick}>Add media</button>
+          <button className='btn' onClick=${this._handleAddMediaClick}>Add media</button>
         </div>
-      </div>
+      </div>`
     )
   },
 
   _renderChromecastDialog () {
     let items = this.state.chromecasts.map((d, i) => {
       const active = d.id === this.state.casting ? 'active' : ''
-      return <li key={i} onClick={this._handleCastItemClick.bind(this, d)} className={active}>{d.name}</li>
+      return `<li key=${i} onClick=${this._handleCastItemClick.bind(this, d)} className=${active}>${d.name}</li>`
     })
 
     if (!items.length) {
-      items = [<li key={-1} onClick={this._handleRefreshChromecastsClick}>No chromecasts found. Click to refresh.</li>]
+      items = [hx`<li key=${-1} onClick=${this._handleRefreshChromecastsClick}>No chromecasts found. Click to refresh.</li>`]
     }
 
     return (
-      <div key={'chromecasts'} className='dialog chromecasts'>
-        <ul>{items}</ul>
-      </div>
+      hx`<div key=${'chromecasts'} className='dialog chromecasts'>
+        <ul>${items}</ul>
+      </div>`
     )
   },
 
@@ -234,7 +236,7 @@ const UI = React.createClass({
     if (this.state.buffered) {
       this.state.buffered.forEach((b, i) => {
         bufferedBars.push(
-          <div key={i} className='controls__timeline__buffered' style={{ transition: 'width 250ms ease-in-out', left: b.left + '%', width: b.width + '%' }}></div>
+          hx`<div key=${i} className='controls__timeline__buffered' style=${{ transition: 'width 250ms ease-in-out', left: b.left + '%', width: b.width + '%' }}></div>`
         )
       })
     }
@@ -255,13 +257,13 @@ const UI = React.createClass({
     let emptyState
     if (!this.state.playlist.length && !this.state.loading) {
       emptyState = (
-        <div className='empty-state'>
+        hx`<div className='empty-state'>
           <div className='empty-state__heading'>Drop media here</div>
           <div className='empty-state__icon'>
             <Icon icon='file-download' size='48'/>
           </div>
-          <button onClick={this._handleAddMediaClick} className='btn empty-state__button'>Add media</button>
-        </div>
+          <button onClick=${this._handleAddMediaClick} className='btn empty-state__button'>Add media</button>
+        </div>`
       )
     }
     return emptyState
@@ -274,7 +276,7 @@ const UI = React.createClass({
       const maxRight = window.innerWidth - 25
       const value = this._formatTime(this.state.uiTimelineTooltipPosition / window.innerWidth * this.state.duration)
       timelineTooltip = (
-        <div className='controls__timeline__tooltip' style={{ left: Math.min(maxRight, Math.max(minLeft, this.state.uiTimelineTooltipPosition)) + 'px' }}>{value}</div>
+        hx`<div className='controls__timeline__tooltip' style=${{ left: Math.min(maxRight, Math.max(minLeft, this.state.uiTimelineTooltipPosition)) + 'px' }}>${value}</div>`
       )
     }
     return timelineTooltip
@@ -284,9 +286,9 @@ const UI = React.createClass({
     let loading
     if (this.state.loading) {
       loading = (
-        <div className='toast-container'>
+        hx`<div className='toast-container'>
           <div className='toast'>Loading...</div>
-        </div>
+        </div>`
       )
     }
     return loading
@@ -326,63 +328,61 @@ const UI = React.createClass({
     let bufferingIcon
     if (this.state.buffering) {
       bufferingIcon = (
-        <div className='controls__buffering'>
+        hx`<div className='controls__buffering'>
           Buffering
-        </div>
+        </div>`
       )
     }
 
     let titlebar
     if (process.platform === 'darwin') {
-      titlebar = <Titlebar onFullscreen={this._handleFullscreenClick} onClose={this._handleCloseClick} onMaximize={this._handleMaximizeClick} onMinimize={this._handleMinimizeClick} isFullscreen={this.state.uiFullscreen}/>
+      titlebar = React.createElement(Titlebar, { onFullscreen: this._handleFullscreenClick, onClose: this._handleCloseClick, onMaximize: this._handleMaximizeClick, onMinimize: this._handleMinimizeClick, isFullscreen: this.state.uiFullscreen })
     }
 
     const app = (
-      <div className={'ui ' + (this.state.status === 'stopped' ? 'stopped' : '')}>
-        {loading}
-        {emptyState}
-        {titlebar}
-        <CSSTG transitionName='fade-in' transitionEnterTimeout={125} transitionLeaveTimeout={125}>
-          {dialog}
-        </CSSTG>
+      hx`<div className=${'ui ' + (this.state.status === 'stopped' ? 'stopped' : '')}>
+        ${loading}
+        ${emptyState}
+        ${titlebar}
+        ${React.createElement(CSSTG, { transitionName: 'fade-in', transitionEnterTimeout: 125, transitionLeaveTimeout: 125 }, [dialog])}
         <div className='controls'>
-          <div className='controls__timeline' onMouseMove={this._handleTimelineMouseMove} onClick={this._handleSeek} ref='timeline'>
-            {timelineTooltip}
-            {bufferedBars}
-            <div className='controls__timeline__progress' style={progressStyle}></div>
+          <div className='controls__timeline' onMouseMove=${this._handleTimelineMouseMove} onClick=${this._handleSeek} ref='timeline'>
+            ${timelineTooltip}
+            ${bufferedBars}
+            <div className='controls__timeline__progress' style=${progressStyle}></div>
           </div>
           <div className='controls__toolbar'>
-            <button disabled={!this.state.currentFile} onClick={this._handleTogglePlayClick}>
-              <Icon icon={playIcon}/>
+            <button disabled=${!this.state.currentFile} onClick=${this._handleTogglePlayClick}>
+              ${React.createElement(Icon, { icon: playIcon })}
             </button>
             <div className='controls__toolbar__volume'>
-              <button onClick={this._handleVolumeIconClick}>
-                <Icon icon={volumeIcon}/>
+              <button onClick=${this._handleVolumeIconClick}>
+                ${React.createElement(Icon, { icon: volumeIcon })}
               </button>
               <div className='controls__toolbar__volume__slider'>
-               <Slider value={this.state.volume * 100} onChange={this._handleVolumeChange} withBars />
+               ${React.createElement(Slider, { value: this.state.volume * 100, onChange: this._handleVolumeChange, withBars: true })}
               </div>
             </div>
-            <div className='controls__title'>{title}</div>
+            <div className='controls__title'>${title}</div>
             <div className='controls__metadata'>
-              {this._formatTime(currentTime)} / {this._formatTime(duration)}
+              ${this._formatTime(currentTime)} / ${this._formatTime(duration)}
             </div>
-            {bufferingIcon}
-            <button disabled={!hasSubtitles} className={(hasSubtitles ? '' : 'muted') + (showingSubtitles ? 'on' : '')} onClick={this._handleSubtitlesClick}>
-              <Icon icon='closed-caption'/>
+            ${bufferingIcon}
+            <button disabled=${!hasSubtitles} className=${(hasSubtitles ? '' : 'muted') + (showingSubtitles ? 'on' : '')} onClick=${this._handleSubtitlesClick}>
+              ${React.createElement(Icon, { icon: 'closed-caption' })}
             </button>
-            <button className={this.state.chromecasts.length ? '' : 'muted'} onClick={this._handleChromecastIconClick}>
-              <Icon icon={this.state.casting ? 'cast-connected' : 'cast'}/>
+            <button className=${this.state.chromecasts.length ? '' : 'muted'} onClick=${this._handleChromecastIconClick}>
+              ${React.createElement(Icon, { icon: this.state.casting ? 'cast-connected' : 'cast' })}
             </button>
-            <button onClick={this._handlePlaylistIconClick}>
-              <Icon icon='playlist-empty'/>
+            <button onClick=${this._handlePlaylistIconClick}>
+              ${React.createElement(Icon, { icon: 'playlist-empty' })}
             </button>
-            <button onClick={this._handleFullscreenClick}>
-              <Icon icon={this.state.uiFullscreen ? 'fullscreen-exit' : 'fullscreen'}/>
+            <button onClick=${this._handleFullscreenClick}>
+              ${React.createElement(Icon, { icon: this.state.uiFullscreen ? 'fullscreen-exit' : 'fullscreen' })}
             </button>
           </div>
         </div>
-      </div>
+      </div>`
     )
     return app
   }
@@ -390,6 +390,6 @@ const UI = React.createClass({
 
 module.exports = {
   init: (emitter, cb) => {
-    render(<UI emitter={emitter}/>, document.getElementById('react-root'), cb)
+    render(React.createElement(UI, { emitter: emitter }), document.getElementById('react-root'), cb)
   }
 }
